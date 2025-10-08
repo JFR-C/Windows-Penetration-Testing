@@ -45,11 +45,13 @@ Examples
   	- Remove all existing comments and insert fake ones.
     - Remove all console output messages (i.e., Console.WriteLine("text")).
   	- Modify the code structure or logic slightly if needed to evade signature-based detection.
+    - Add an icon file and assembly attributes
+    - Etc.
 
   - STEP 4. Compile the C# shellcode loader 
 ```  
 [*] Example with "Developer PowerShell for VS 2022" - Microsoft (R) Visual C# Compiler
-    Command: csc /t:exe /out:C:\path\Loader.exe C:\path\CsharpShellCodeLoader.cs
+    Command: csc /t:exe /out:C:\path\Loader.exe C:\path\CsharpShellCodeLoader.cs AssemblyInfo.cs -nowarn:1691,618  -win32icon:.\icon.ico
 ``` 
   - STEP 5. Optional Actions
   	- You may compress and obfuscate the shellcode loader executable using a packer such as ConfuserEx. However, this step is not strictly necessary to bypass most AV solutions if you performed sufficient manual obfuscation in Step 3.
