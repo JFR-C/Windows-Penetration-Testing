@@ -45,10 +45,10 @@ Examples
   	- Remove all existing comments and insert fake ones.
     - Remove all console output messages (i.e., Console.WriteLine("text")).
   	- Modify the code structure or logic slightly if needed to evade signature-based detection.
-    - Add an icon file and assembly attributes
     - Etc.
 
-  - STEP 4. Compile the C# shellcode loader 
+  - STEP 4. Compile the C# shellcode loader  
+    <i/> Note: Adding an icon file and assembly attributes can make your executable appear more legitimate. </i>
 ```  
 [*] Example with "Developer PowerShell for VS 2022" - Microsoft (R) Visual C# Compiler
     Command: csc /t:exe /out:C:\path\Loader.exe C:\path\CsharpShellCodeLoader.cs AssemblyInfo.cs -nowarn:1691,618  -win32icon:.\icon.ico
