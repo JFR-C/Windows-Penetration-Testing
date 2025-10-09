@@ -4,12 +4,13 @@ Shellcode loader (written in C#) that implements several antivirus bypass and de
 
 #### FEATURES
   - Shellcode execution using Asynchronous Procedure Call (APC) and the NtTestAlert function
-  - AMSI bypass (patching technique)
-  - ETW bypass in user-mode (patching 'EtwEventWrite')
-  - Shellcode encryption (AES-256 / CBC mode)
-  - Shellcode handling => the encrypted shellcode is Base64-encoded and loaded from a local file
+  - AES-256 Shellcode Encryption (CBC Mode)
+  - AMSI bypass (patching 'AmsiScanBuffer')
+  - ETW bypass (user-mode / patching 'EtwEventWrite')
   - Dynamic API resolution (via GetProcAddress and LoadLibrary)
   - Memory protection change after copy (PAGE_READWRITE changed to PAGE_EXECUTE_READ)
+  - Shellcode Loader with file input support
+    - the loader accepts a local text file containing an AES-256 encrypted and Base64-encoded C# shellcode as input.
   - Basic sandbox detection & evasion
     - Terminates execution if the host Windows machine is not joined to a specific domain
     - Terminates execution if a debugger is detected (basic anti-debugging check)
@@ -53,10 +54,7 @@ C:\Temp> Shellcode-Crypter-and-Encoder.exe
 [*] Example with "Developer PowerShell for VS 2022" - Microsoft (R) Visual C# Compiler
     > csc /t:exe /out:C:\path\Loader.exe C:\path\CsharpShellCodeLoader.cs AssemblyInfo.cs -nowarn:1691,618  -win32icon:.\icon.ico
 ``` 
-  - STEP 5. Optional Actions
-  	- You may compress and obfuscate the shellcode loader executable using a packer such as ConfuserEx. However, this step is not strictly necessary to bypass most AV solutions if you performed sufficient manual obfuscation in Step 3.
-  	- Alternatively, you may choose to remotely download and execute the C# binary in memory using PowerShell and reflection-based code loading. This approach avoids writing the binary to disk, enhancing stealth and reducing forensic traces.
-  - STEP 6. Execution
+  - STEP 5. Execute the shellcode loader on a target Windows server or laptop
 ```
 [*] Usage :
     > loader.exe <domain name> <C:\filepath\Encrypted_and_bas64encoded_shellcode.txt> <AES key>
