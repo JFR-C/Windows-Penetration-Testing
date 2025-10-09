@@ -62,7 +62,7 @@ C:\Temp> Shellcode-Crypter-and-Encoder.exe
     > loader.exe lab.local C:\temp\Encrypted_and_bas64encoded_shellcode.txt SuperAesKey
 [*] Note:
     > Argument 1 = The domain name of the target Windows machine. Used for sandbox detection/evasion by verifying domain membership.
-    > Argument 2 = The file path to the AES-256 encrypted shellcode, which must be Base64-encoded (i.e., C:\path\file.txt or .\path\file.txt).
+    > Argument 2 = The file path to the AES-256 encrypted and Base64-encoded shellcode (i.e., C:\path\file.txt or .\path\file.txt).
     > Argument 3 = The AES passkey to decrypt the shellcode.
 ``` 
 #### LICENSE
