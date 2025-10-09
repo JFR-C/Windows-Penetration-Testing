@@ -63,7 +63,7 @@ C:\Temp> Shellcode-Crypter-and-Encoder.exe
 [*] Note:
     > Argument 1 = The domain name of the target Windows machine. Used for sandbox detection/evasion by verifying domain membership.
     > Argument 2 = The file path to the AES-256 encrypted shellcode, which must be Base64-encoded (i.e., C:\path\file.txt or .\path\file.txt).
-    > Argument 3 = The AES passkey used for encryption and decryption.
+    > Argument 3 = The AES passkey to decrypt the shellcode.
 ``` 
 #### LICENSE
   - GNU General Public License v3.0
