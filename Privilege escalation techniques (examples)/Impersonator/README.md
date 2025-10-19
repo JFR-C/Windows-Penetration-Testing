@@ -7,6 +7,7 @@ It can be particularly useful during internal penetration tests, when you have f
 
 #### USAGE
 - STEP 1 - Compile the source code.  
+<i/> OPSEC advice: remove all existing comments and most 'printf' statements from the source code before compiling. </i>
 ```
 Example with Visual Studio 2022 Developer Command Prompt v17.14.14:
 -------------------------------------------------------------------
@@ -55,8 +56,6 @@ C:\Temp> impersonator.exe 13044
 	 LAB\targetprivuser
 <SNIP>
 ```
-
-
 
 #### LICENSE
 GNU General Public License v3.0
