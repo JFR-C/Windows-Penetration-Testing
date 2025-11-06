@@ -1,9 +1,9 @@
 ### Process-Freezer
 ---------------------------------------
 This C program enables a user with local administrator rights on a Windows machine to suspend or resume running processes with various integrity levels (Medium, High, System) by PID.
-When executed with elevated privileges (local admin), it enables 'SeDebugPrivilege' to open a handle and suspend processes (call 'NtSuspendProcess') as long as they are not protected by mechanisms such as Protected Process Light (PPL).
+When executed with elevated privileges (local admin), it enables 'SeDebugPrivilege' to open a handle and suspend processes (call 'NtSuspendProcess') even with High and System integrity level as long as they are not protected by mechanisms such as Protected Process Light (PPL).
 
-It can be particularly useful during internal penetration tests when you need to temporarily suspend (rather than terminate) processes associated with security solutions such as DLP agents, SIEM collectors, or antivirus software, provided they are not protected (e.g., not running as PPL or with anti-tampering features disabled).
+It can be particularly useful during internal penetration tests when you want to temporarily suspend (rather than terminate) processes associated with security solutions such as DLP agents, SIEM collectors, or antivirus software, provided they are not protected (e.g., not running as PPL or without proper anti-tampering features).
 
 Warning: Be carefull, suspending critical OS processes may destabilize or crash the operating system. Use with caution and at your own risks.
 
