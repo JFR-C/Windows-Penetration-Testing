@@ -14,11 +14,11 @@ Warning: Be carefull, suspending critical OS processes may destabilize or crash 
 Example with Visual Studio 2022 Developer Command Prompt v17.14.14:
 -------------------------------------------------------------------
 Basic:
-+ c:\path-to-project\ProcessFreezer> cl impersonator.c /link advapi32.lib
++ c:\path-to-project\ProcessFreezer> cl ProcessFreezer.c /link advapi32.lib
 With an icon:
-+ c:\path-to-project\ProcessFreezer>> echo IDI_ICON1 ICON "myicon.ico" > appicon.rc
-+ c:\path-to-project\ProcessFreezer>> rc appicon.rc
-+ c:\path-to-project\ProcessFreezer>> cl impersonator.c /link advapi32.lib /OUT:ProcessFreezer>.exe appicon.res
++ c:\path-to-project\ProcessFreezer> echo IDI_ICON1 ICON "myicon.ico" > appicon.rc
++ c:\path-to-project\ProcessFreezer> rc appicon.rc
++ c:\path-to-project\ProcessFreezer> cl ProcessFreezer.c /link advapi32.lib /OUT:ProcessFreezer.exe appicon.res
 ```
 
 - STEP 2 - On your target Windows machine, run the command 'tasklist -v' to display all running processes along with detailed information.
