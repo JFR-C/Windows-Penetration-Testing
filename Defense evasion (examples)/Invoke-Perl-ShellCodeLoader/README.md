@@ -9,7 +9,7 @@ It generates an obfuscated and encrypted shellcode loader (Perl script) that imp
   - Script obfuscation (randomized function and variable names + nested payloads with reflective loading)
   - ETW bypass in user-mode (patching 'NtTraceEvent')
   - Dynamic API resolution for the shellcode injection (via GetProcAddress + hash-based API resolution)
-  - Memory protection hardening (Applies section-specific memory permissions i.e. first RW, then switched to RX after copy)
+  - Memory protection hardening (Applies section-specific memory permissions i.e. first RW, then switch to RX after copy)
   - Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
   - Compatible with shellcodes of multiple C2 frameworks such as Metasploit, Sliver and Havoc
 
