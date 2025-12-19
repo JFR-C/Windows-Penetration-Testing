@@ -51,7 +51,7 @@ No argument was provided. Press 'Enter' to continue, or press 'Ctrl+C' to exit a
 ```
 
 #### OPSEC improvement (to do)
-- Implement direct or indrect syscalls to improve stealth (because the use of 'VirtualAlloc' with 'PAGE_READWRITE' then 'VirtualProtect' to executable presents a risk of detection).
+- Implement direct or indirect syscalls to improve stealth.
   
 #### LICENSE
 GNU General Public License v3.0
