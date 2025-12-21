@@ -13,7 +13,7 @@ Note: It uses the great tool 'DONUT' (TheWover).
   - Dynamic API resolution for the shellcode injection (via GetProcAddress + hash-based API resolution)
   - Memory protection hardening (Applies section-specific memory permissions i.e. first RW, then switch to RX after copy)
   - Basic sandbox detection and evasion (Delayed execution + Terminates execution if a debugger is detected)
-  - Compatible with shellcodes of multiple C2 frameworks such as Metasploit, Sliver and Havoc
+  - Compatible with many offensive security tools (x64 EXE, unmanaged code, no GUI) such as mimikatz, pplblade, etc.
 
 #### USAGE
 - STEP 1. Generate an obfuscated PE loader (Perl script) that embeds your offensive PE (x64 exe).  
