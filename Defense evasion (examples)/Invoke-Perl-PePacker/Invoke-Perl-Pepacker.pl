@@ -31,9 +31,9 @@ use Compress::Zlib;
 # Check arguments
 die "Usage: perl Invoke-Perl-Pepacker.pl <PE-to-pack.exe> <obfuscated_script_loader.pl>\n" unless @ARGV == 2;
 
-my ($input_file1, $output_file) = @ARGV;
+my ($input_file, $output_file) = @ARGV;
 
-my $filename_only = basename($input_file1);
+my $filename_only = basename($input_file);
 
 my $script_dir = dirname(File::Spec->rel2abs($0));
 my $donut_path = File::Spec->catfile($script_dir, "donut.exe");
