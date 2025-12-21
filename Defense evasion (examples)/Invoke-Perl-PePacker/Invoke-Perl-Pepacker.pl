@@ -17,7 +17,7 @@
 # OPSEC advice: remove all existing comments in this script before generating your obfuscated perl script loader.
 # =================================================================================================================================================================
 # Usage (example):
-# + C:\path\perl> perl.exe .\Invoke-Perl-Pepacker.pl ".\PE-to-pack.exe" ".\obfuscated_script_loader.pl"
+# + C:\path\perl> perl.exe .\Invoke-Perl-Pepacker.pl PE-to-pack.exe obfuscated_PEloader_script.pl"
 # =================================================================================================================================================================
 
 use strict;
