@@ -33,7 +33,6 @@ die "Usage: perl Invoke-Perl-Pepacker.pl <PE-to-pack.exe> <obfuscated_script_loa
 
 my ($input_file1, $output_file) = @ARGV;
 
-my $input_file1 = $ARGV[0];
 my $filename_only = basename($input_file1);
 
 my $script_dir = dirname(File::Spec->rel2abs($0));
