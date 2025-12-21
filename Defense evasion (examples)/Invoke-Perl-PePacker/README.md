@@ -1,7 +1,7 @@
 ### Invoke-Perl-PePacker.pl
 --------------------------------------
 'Invoke-Perl-Pepacker.pl' is a PE packer perl script that aims to bypass AV solutions such as Windows Defender.  
-It generates an obfuscated and encrypted perl script that embeds an offensive PE (x64 exe) and implements several antivirus bypass & defense evasion techniques.
+It generates an obfuscated and encrypted perl script that embeds an offensive PE (x64 exe) and implements several antivirus bypass & defense evasion techniques.  
 Note: It uses the great tool 'DONUT' (TheWover).
 
 #### FEATURES
