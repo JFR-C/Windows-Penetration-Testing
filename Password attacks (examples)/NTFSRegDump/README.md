@@ -1,7 +1,7 @@
 ### NTFSRegDump
 ---------------------------------------
 A Windows registry dumper (written in GO) that operates by reading raw disk sectors and parsing the NTFS Master File Table (MFT) to locate and extract registry hives (SAM, SYSTEM, and SECURITY). 
-It avoids using native utilities like 'reg save' and 'vssadmin', reducing the likelihood of detection by security monitoring tools.  
+It avoids using high-level system APIs and native utilities like 'reg save' and 'vssadmin', reducing the likelihood of detection by security monitoring tools.  
 This tool is a slightly modified version of the GitHub project 'SilentSAM', which itself relies on the GitHub project 'gomft' (an NTFS MFT parser written in Go).
 
 DISCLAIMER: During testing, this tool consistently consumed a high amount of CPU (around 70%), which may not be ideal depending on your environment...
