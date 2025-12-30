@@ -4,7 +4,7 @@ A Windows registry dumper (written in GO) that operates by reading raw disk sect
 It avoids using high-level system APIs and native utilities like 'reg save' and 'vssadmin', reducing the likelihood of detection by security monitoring tools.  
 This tool is a slightly modified version of the GitHub project 'SilentSAM', which itself relies on the GitHub project 'gomft' (an NTFS MFT parser written in Go).
 
-DISCLAIMER: During testing, this tool consistently consumed a high amount of CPU (around 70%), which may not be ideal depending on your environment...
+DISCLAIMER: During testing, this tool consistently consumed a high amount of CPU, which may not be ideal depending on your environment.
 
 #### USAGE
 - STEP 1 - Compile the GO source code.  
