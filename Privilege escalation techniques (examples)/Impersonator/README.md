@@ -1,6 +1,6 @@
 ### Impersonator
 ---------------------------------------
-This C program allows a user with local administrator rights on a Windows machine to impersonate any other logged-in Windows user or service accounts. 
+This C program allows a user with local administrator rights on a Windows machine to impersonate any other logged-in Windows user or service account. 
 It launches a new CMD console under the context of another logged-in account by enabling 'SeDebugPrivilege' and using access token manipulation techniques.
 The program requires a process ID (PID) of the target account's session as an input argument.  
 
