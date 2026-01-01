@@ -1,7 +1,7 @@
 ### Impersonator
 ---------------------------------------
-This C program enables a user with local administrator rights on a Windows machine to launch a CMD console under the context of another logged-in Windows account (impersonation), leveraging the 'SeDebugPrivilege'. 
-The program requires the process ID (PID) of the target account's session as an input argument.
+This C program enables a user with local administrator rights on a Windows machine to launch a CMD console under the context of another logged-in Windows account by enabling 'SeDebugPrivilege' and using access token manipulation techniques.
+The program requires a process ID (PID) of the target account's session as an input argument.  
 
 It can be particularly useful during internal penetration tests, when you have full control over a Windows server and aim to compromise another privileged account currently logged into the system.
 
