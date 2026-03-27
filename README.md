@@ -100,13 +100,14 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 ➤ Enumerate PXE boot media potentially provided from an SCCM server and then try to retrieve Windows credentials via PXE boot media (tools: pxethiefy, PXEthief)
 ➤ Unpatched/obsolete systems prone to an unauthenticated Remote Code Execution (RCE) vulnerability with a public exploit available
    Examples:
-   - Windows: MS17-010 (EternalBlue), CVE-2020-1472 (Zerologon, risky to run in a production environment), old MS08-067, ...
+   - Windows: WSUS RCE (CVE-2025-59287), MS17-010 (EternalBlue), CVE-2020-1472 (Zerologon, risky to run in a production environment), old MS08-067, ...
    - Web servers: WebLogic RCE (CVE-2023-21839, CVE-2022-21371, CVE-2020-14882, CVE-2019-2725), Apache Struts RCE (CVE-2017-9805), JBoss RCE (CVE-2017-12149), Java RMI RCE, ...
    - CMS: Telerik (CVE 2019-18935, CVE-2017-9248), Kentico (CVE-2019-10068), Drupal (DrupalGeddon2/CVE-2018-7600), DotNetNuke (CVE-2017-9822), ...
    - Citrix (ADC & Gateway): Citrix Bleed2 (CVE-2025-6543), Citrix Bleed (CVE-2023-4966), CVE-2023-3519, CVE-2020-8193, CVE-2019-19781
    - Atlassian software: Jira (CVE-2019-11581), Confluence (CVE-2022-26134)
    - Applications using the Java library Log4j: CVE-2021-44228 (Log4shell)
    - Outlook: ProxyLogon (CVE-2021-26855), ProxyNotShell (CVE-2022-41040, CVE-2022-41082)
+   - React Server Component: React2Shell (CVE-2025-55182)
 ```
 ```
 2. Grey-box penetration test (we start with 1 low-privileged Windows account)
@@ -139,11 +140,12 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 
 ---------------
 #### STEP 4. POST-EXPLOITATION and LOCAL PRIVILEGE ESCALATION 🛠
-<i>The purpose of the post-exploitation phase is to determine the value of the systems compromised during the previous phase (e.g. sensitivity of the data stored on it, usefulness in further compromising the network) and to escalate privileges to harvest credentials (e.g. to steal the password of a privileged account from the memory of a Windows server/laptop). During this phase, the system(s) compromised can be set-up as a pivot to reach machines that are located in other networks. </i>
+<i>The purpose of the post-exploitation phase is to determine the value of the systems compromised during the previous phase (e.g. sensitivity of the data stored on it, usefulness in further compromising the network) and to escalate privileges to obtain local administrator rights. This phase also involves harvesting credentials and potentially taking over any privileged accounts currently logged into the compromised systems. Additionally, compromised systems can be configured as pivot to reach machines that are located in other network segments.</i>
 
+>Case 1 - You hacked a Windows server or laptop
 ```
-1. Windows local privilege escalation to become local administrator and/or "NT AUTHORITY\SYSTEM"
-------------------------------------------------------------------------------------------------
+1. Windows local privilege escalation techniques to become local administrator and/or "NT AUTHORITY\SYSTEM"
+------------------------------------------------------------------------------------------------------------
 ➤ Exploiting OS security misconfiguration 
    Examples:
    - weak service permissions (file & binpath)
@@ -158,7 +160,7 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
    - bring your own vulnerable driver
   
 ➤ Exploiting an unpatched local Windows vulnerability 
-  (e.g. KrbrelayUp, LocalPotato, PrintNightmare, SeriousSam/HiveNightmare, Windows Installer LPE, Juicy/Rotten/Hot Potato exploits,...)
+  (e.g. KrbrelayUp, PrintNightmare, SeriousSam/HiveNightmare, Windows Installer LPE, Juicy/Rotten/Hot Potato exploits,...)
 
 ➤ Exploiting an unpatched vulnerability affecting a third party software running with high privileges
 ```
@@ -196,17 +198,47 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
    - ...
 ```
 ```
-3. Dumping other credentials
-----------------------------
+3. Gathering other credentials
+-------------------------------
+   - Look for clear-text passwords hardcoded in scripts, configuration files (e.g. Web.config, tomcat-users.xml), backup files, log files, ...
+   - Dumping KeePass master password from memory using tools like 'Keethief', 'KeePassHax' or 'KeePwn'
+   - Extracting clear-text passwords from 'mstsc.exe' using API Hooking (e.g. RdpThief, SharpRDPThief)
    - The LaZagne application can be used to retrieve passwords stored in browsers, DBA tools (e.g. dbvis, SQLdevelopper) and Sysadmin tools (e.g. WinSCP, PuttyCM, OpenSSH, VNC, OpenVPN)
    - The script SessionGopher.ps1 can be used to find and decrypt saved session information for remote access tools (PuTTY, WinSCP, FileZilla, SuperPuTTY, RDP)
-   - Dumping KeePass master password from memory using tools like 'Keethief', 'KeePassHax' or 'KeePwn'
-   - Clear-text passwords hardcoded in scripts, configuration files (e.g. Web.config, tomcat-users.xml), backup files, log files, ...
+```
+```
+4. Take over privileged accounts (requires local admin priv)
+------------------------------------------------------------
+➤ Use Windows Token impersonation technique to execute arbirary OS commands as another privileged account (victim) also logged on the same Windows server
+➤ RDP session hijacking technique (e.g., using the native Windows command "c:\windows\system32\tscon.exe")
+➤ Add a malicious script or a malware in the Windows start-up folder of a server to force any privileged users (victims) to run it when they logon
+  (e.g., "\\REMOTE-COMPUTER-NAME\C$\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\malware.exe")
+➤ Create a malicious scheduled task that is triggered at log on of any user and that executes a malicious script with the victim user's privileges
+➤ Modify the registry RUN keys so every time a user logs on the Windows server a malware or a malicious script is run with its privileges
+➤ ...
+```
+.
+> Case 2 - You hacked a Web server
+```
+1 - Upload a webshell that allows you to execute OS commands and browse, upload, and download files on the underlying Windows server
+2 - Abuse the SeImpersonatePrivilege (which is granted by default to Web server services on Windows) using a Potato‑family exploit
+    to escalate privileges and gain local admin access on the underlying Windows server
+3 - Apply the hacking techniques described in Case 1 to continue your assessment or expand your access
+```
+.
+>Case 3 - You hacked a MSSQL/PostgreSQL/Oracle database
+```
+1 - Identify and exploit a database security misconfiguration to obtain DBA privileges
+2 - Dump the local database password hashes, attempt to crack them using tools such as Hashcat, and reuse any recovered db credentials to compromise additional databases.
+3 - Then leverage your DBA rights and built‑in database features (such as stored procedures) to execute OS commands on the underlying Windows server
+4 - Abuse the SeImpersonatePrivilege (which is granted by default to database services on Windows) using a Potato‑family exploit
+    to escalate privileges and gain local admin access on the underlying Windows server
+5 - Apply the hacking techniques described in Case 1 to continue your assessment or expand your access
 ```
 
 -----------------
 #### STEP 5. NETWORK LATERAL MOVEMENT and PRIVILEGED ACCOUNTS HUNTING 🕸
-<i>The purpose of the lateral movement phase is to identify Windows servers and laptops on which high privileged user and service accounts are logged (e.g. administrator of all servers, administrator of all workstations/laptops, Domain Admin account). Then try to log into these Windows servers and laptops (for example by re-using the credentials harvested during the previous phase) and take over the high privileged accounts using various hacking techniques (e.g., dumping credentials from memory, token impersonation). </i>
+<i>The purpose of the lateral movement phase is to identify Windows servers and laptops on which high privileged user and service accounts are logged (e.g. administrator of all servers and/or databases, administrator of all workstations/laptops, Domain Admin account). Then try to log into these Windows servers and laptops (for example by re-using the credentials harvested during the previous phase) and take over the high privileged accounts using various hacking techniques (e.g., dumping credentials from memory, token impersonation). </i>
 ```
 1. Network lateral movement techniques 
 --------------------------------------
@@ -250,29 +282,33 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 ```
 1. Privilege escalation to become "Domain Admin"
 ------------------------------------------------
-➤ Dumping from a Windows server's memory the clear-text password (or hash) of an account member of the group 'Domain Admins' or 'Administrators' of the Domain Controller
-➤ Exploiting AD / Windows domain security misconfiguration
+➤ Exploiting AD / Windows domain security misconfigurations
    Examples:
-   - abusing weak ACL or GPO permissions
-   - abusing LAPS misconfiguration
-   - exploiting password reuse issues
-     > the same password is used to protect multiple high privileged accounts and low-privileged accounts 
-     > the same password is used to protect the default local administrator account of the Windows servers and the Domain Controllers (i.e. no hardening, no LAPS)
+   - Abusing poor AD tiering practices
+     > Take over an account member of the group 'Domain Admins' (or any other Tier 0 account) running on a member Windows server or laptop (e.g. dumping creds from memory, token impersonation, RDP session hijacking)
+   - Abusing weak ACL or GPO permissions
+   - Abusing LAPS misconfiguration
+   - Exploiting password robustness issues + poor AD tiering practices
+     > Recover and crack the password of a Domain Admin (or any other Tier 0 account) using techniques such as Kerberoasting, LLMNR poisoning, or NBT‑NS poisoning.
+   - Exploiting password reuse issues
+     > The same password is used to protect multiple high privileged accounts and low-privileged accounts 
+     > The same password is used to protect the default local administrator account of the Windows servers and the Domain Controllers (i.e. no hardening, no LAPS)
 ➤ Exploiting Active Directory Certificate Services (ADCS) misconfiguration
    Examples:
-   - abusing misconfigured Certificate Templates - ESC1 & ESC2
-   - abusing misconfigured Enrolment Agent Templates - ESC3
-   - abusing vulnerable Certificate Template Access Control - ESC4
-   - abusing vulnerable PKI Object Access Control - ESC5
-   - abusing "EDITF_ATTRIBUTESUBJECTALTNAME2" flag issue - ESC6
-   - abusing vulnerable Certificate Authority Access Control - ESC7
-   - abusing NTLM Relay to AD CS HTTP Endpoints – ESC8
-   - abusing "no Security Extension" issue - ESC9
-   - abusing weak Certificate Mappings - ESC10
-   - abusing NTLM relay to ICPR - ESC11
-   - abusing ADCS CA on YubiHSM - ESC12
-   - abusing Issuance Policy - ESC13
-   - abusing EKUwu Application Policies (CVE-2024-49019) - ESC15
+   - Abusing misconfigured Certificate Templates - ESC1 & ESC2
+   - Abusing misconfigured Enrolment Agent Templates - ESC3
+   - Abusing vulnerable Certificate Template Access Control - ESC4
+   - Abusing vulnerable PKI Object Access Control - ESC5
+   - Abusing "EDITF_ATTRIBUTESUBJECTALTNAME2" flag issue - ESC6
+   - Abusing vulnerable Certificate Authority Access Control - ESC7
+   - Abusing NTLM Relay to AD CS HTTP Endpoints – ESC8
+   - Abusing "no Security Extension" issue - ESC9
+   - Abusing weak Certificate Mappings - ESC10
+   - Abusing NTLM relay to ICPR - ESC11
+   - Abusing ADCS CA on YubiHSM - ESC12
+   - Abusing Issuance Policy - ESC13
+   - Abusing EKUwu Application Policies (CVE-2024-49019) - ESC15
+➤ Take over a Windows server hosting Tier 0 services such as WSUS, SCCM, or ADCS and leverage it to gain control over the Domain Controllers.
 ➤ Compromise an account member of the default security group 'DNSAdmins' and take over the Windows domain by executing a DLL as 'NT AUTHORITY\SYSTEM' on the Domain Controller (known privesc)
 ➤ Compromise an account member of the default security groups 'Backup Operators' or 'Server Operators' and take over the Windows domain by backuping the NTDS.dit file and HKLM\SYSTEM and then extracting the password hash of 'Domain admins' accounts (known privesc)
 ➤ Compromise an account member of the default security group 'Account Operators' that can be used to privesc and take over the Windows domain (known privesc)
