@@ -142,7 +142,7 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 #### STEP 4. POST-EXPLOITATION and LOCAL PRIVILEGE ESCALATION 🛠
 <i>The purpose of the post-exploitation phase is to determine the value of the systems compromised during the previous phase (e.g. sensitivity of the data stored on it, usefulness in further compromising the network) and to escalate privileges to obtain local administrator rights. This phase also involves harvesting credentials and potentially taking over any privileged accounts currently logged into the compromised systems. Additionally, compromised systems can be configured as pivot to reach machines that are located in other network segments.</i>
 
->Case 1 - You hacked a Windows server or laptop
+>Example 1 – You have gained unauthorized access to a Windows server or workstation
 ```
 1. Windows local privilege escalation techniques to become local administrator and/or "NT AUTHORITY\SYSTEM"
 ------------------------------------------------------------------------------------------------------------
@@ -218,22 +218,22 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 ➤ ...
 ```
 .
-> Case 2 - You hacked a Web server
+> Example 2 – You have compromised a Web server
 ```
 1 - Upload a webshell that allows you to execute OS commands and browse, upload, and download files on the underlying Windows server
 2 - Abuse the SeImpersonatePrivilege (which is granted by default to Web server services on Windows) using a Potato‑family exploit
     to escalate privileges and gain local admin access on the underlying Windows server
-3 - Apply the hacking techniques described in Case 1 to continue your assessment or expand your access
+3 - Apply the hacking techniques described in the 'Example 1' above to continue your assessment or expand your access
 ```
 .
->Case 3 - You hacked a MSSQL/PostgreSQL/Oracle database
+> Example 3 – You have gained unauthorized access to a MSSQL/PostgreSQL/Oracle database
 ```
 1 - Identify and exploit a database security misconfiguration to obtain DBA privileges
 2 - Dump the local database password hashes, attempt to crack them using tools such as Hashcat, and reuse any recovered db credentials to compromise additional databases.
 3 - Then leverage your DBA rights and built‑in database features (such as stored procedures) to execute OS commands on the underlying Windows server
 4 - Abuse the SeImpersonatePrivilege (which is granted by default to database services on Windows) using a Potato‑family exploit
     to escalate privileges and gain local admin access on the underlying Windows server
-5 - Apply the hacking techniques described in Case 1 to continue your assessment or expand your access
+5 - Apply the hacking techniques described in the 'Example 1' above to continue your assessment or expand your access
 ```
 
 -----------------
