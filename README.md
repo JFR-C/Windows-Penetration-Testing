@@ -273,6 +273,7 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
   (e.g., "\\REMOTE-COMPUTER-NAME\C$\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\malware.exe")
 ➤ Create a malicious scheduled task that is triggered at log on of any user and that executes a malicious script with the victim user's privileges
 ➤ Modify the registry RUN keys so every time a user logs on the Windows server a malware or a malicious script is run with its privileges
+➤ Leverage the CcmExec service to remotely hijack privileged user sessions with the tool 'CcmPwn.py'
 ➤ ...
 ```
 -----------------
@@ -282,32 +283,41 @@ Technical notes, AD pentest methodology, list of tools, scripts and Windows comm
 ```
 1. Privilege escalation to become "Domain Admin"
 ------------------------------------------------
-➤ Exploiting AD / Windows domain security misconfigurations
+➤ Exploiting Active Directory and Windows domain security misconfigurations
    Examples:
-   - Abusing poor AD tiering practices
-     > Take over an account member of the group 'Domain Admins' (or any other Tier 0 account) running on a member Windows server or laptop (e.g. dumping creds from memory, token impersonation, RDP session hijacking)
-   - Abusing weak ACL or GPO permissions
-   - Abusing LAPS misconfiguration
-   - Exploiting password robustness issues + poor AD tiering practices
-     > Recover and crack the password of a Domain Admin (or any other Tier 0 account) using techniques such as Kerberoasting, LLMNR poisoning, or NBT‑NS poisoning.
-   - Exploiting password reuse issues
-     > The same password is used to protect multiple high privileged accounts and low-privileged accounts 
-     > The same password is used to protect the default local administrator account of the Windows servers and the Domain Controllers (i.e. no hardening, no LAPS)
+   - Poor AD tiering practices
+     > Tier 0 accounts (e.g., Domain Admins) are being used to log on and manage servers and workstations instead of being restricted to Domain Controllers only.
+     > Tier 1 accounts (e.g. admin of servers) are being used to log on and manage T0 servers (e.g. ADCS/PKI server, T0 bastion/jump server) instead of solely (T1) servers
+     > Tier 1 accounts (e.g. admin of servers) are being used to log on & manage laptops (T2) instead of solely (T1) servers
+     > Tier 2 accounts (e.g. admin of laptops) are being used to log on & manage a few (T1) servers like Citrix instead of solely laptops & workstations
+     > ...
+   - Poor AD tiering practices + Password issues
+     > Tier 0 accounts (e.g. Domain Admins) with an SPN and a weak password (-> Kerberoasting + pwd cracking)
+     > Tier 0 accounts (e.g. Domain Admins) logged into loptops with a weak pwd (->LMNR or NBT‑NS poisoning / MITM6 + pwd cracking) 
+     > Password re-use issues between T0, T1 and T2 accounts
+     > Password re-use between the local 'Administrator' account of servers and the 'Administrator' account of Domain Controllers (i.e. no hardening, no LAPS)
+     > ...
+   - LAPS misconfiguration
+   - Weak ACL or GPO permissions
+     > Weak ACL allowing low privileged users to reset the password of high privileged (T0/T1/T2) accounts
+     > Weak ACL allowing low privileged users to add themselves into high privileged groups
+     > Weak or misconfigured GPO permissions allowing a low‑privileged user to force a malicious GPO onto privileged machines or servers
+     > ...
 ➤ Exploiting Active Directory Certificate Services (ADCS) misconfiguration
    Examples:
-   - Abusing misconfigured Certificate Templates - ESC1 & ESC2
-   - Abusing misconfigured Enrolment Agent Templates - ESC3
-   - Abusing vulnerable Certificate Template Access Control - ESC4
-   - Abusing vulnerable PKI Object Access Control - ESC5
-   - Abusing "EDITF_ATTRIBUTESUBJECTALTNAME2" flag issue - ESC6
-   - Abusing vulnerable Certificate Authority Access Control - ESC7
-   - Abusing NTLM Relay to AD CS HTTP Endpoints – ESC8
-   - Abusing "no Security Extension" issue - ESC9
-   - Abusing weak Certificate Mappings - ESC10
-   - Abusing NTLM relay to ICPR - ESC11
-   - Abusing ADCS CA on YubiHSM - ESC12
-   - Abusing Issuance Policy - ESC13
-   - Abusing EKUwu Application Policies (CVE-2024-49019) - ESC15
+   - ESC1 & ESC2 - Misconfigured Certificate Templates
+   - ESC3 - Misconfigured Enrolment Agent Templates
+   - ESC4 - Vulnerable Certificate Template Access Control
+   - ESC5 - Vulnerable PKI Object Access Control
+   - ESC6 - 'EDITF_ATTRIBUTESUBJECTALTNAME2' flag issue
+   - ESC7 - Vulnerable Certificate Authority Access Control
+   - ESC8 - NTLM Relay to AD CS HTTP Endpoints
+   - ESC9 - 'No Security Extension' issue
+   - ESC10 - Weak Certificate Mappings
+   - ESC11 - NTLM relay to ICPR
+   - ESC12 - ADCS CA on YubiHSM
+   - ESc13 - Issuance Policy
+   - ESC15 - EKUwu Application Policies (CVE-2024-49019)
 ➤ Take over a Windows server hosting Tier 0 services such as WSUS, SCCM, or ADCS and leverage it to gain control over the Domain Controllers.
 ➤ Compromise an account member of the default security group 'DNSAdmins' and take over the Windows domain by executing a DLL as 'NT AUTHORITY\SYSTEM' on the Domain Controller (known privesc)
 ➤ Compromise an account member of the default security groups 'Backup Operators' or 'Server Operators' and take over the Windows domain by backuping the NTDS.dit file and HKLM\SYSTEM and then extracting the password hash of 'Domain admins' accounts (known privesc)
@@ -491,6 +501,7 @@ For instance, in Red teaming, avoid at all costs using "noisy & easy to detect" 
 | Post-Exploitation, Privesc | Nightly builds of common C# offensive tools | </br> https://github.com/Flangvik/SharpCollection | Nightly builds of common C# offensive tools, fresh from their respective master branches built and released in a CDI fashion using Azure DevOps release pipelines |
 | Post-Exploitation, Privesc | SharpImpersonation | </br> https://github.com/S3cur3Th1sSh1t/SharpImpersonation | A user impersonation tool via Token or Shellcode injection |
 | Post-Exploitation, Privesc | Tokenvator | </br> https://github.com/0xbadjuju/Tokenvator | Windows Tokens impersonation tool|
+| Post-Exploitation, Privesc, Network Lateral Movement | CcmPwn | </br> https://github.com/mandiant/ccmpwn | Lateral movement and privesc script that leverages the CcmExec service to remotely hijack user sessions |
 | AD Privesc | BloodyAD | </br> https://github.com/CravateRouge/bloodyAD |BloodyAD is an Active Directory Privilege Escalation Framework |
 | Post-Exploitation, Defense evasion | AMSI.fail | <br> https://amsi.fail | It generates obfuscated PowerShell snippets that break or disable AMSI for the current process  |
 | Post-Exploitation, Defense evasion | Nuke-AMSI | <br> https://github.com/anonymous300502/Nuke-AMSI | AMSI bypass tool |
